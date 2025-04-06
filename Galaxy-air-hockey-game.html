@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Air Hockey</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a2a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 100%);
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 140, 255, 0.5);
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+        
+        #game-canvas {
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 140, 255, 0.3);
+        }
+        
+        #scoreboard {
+            position: relative;
+            width: 700px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            z-index: 5;
+        }
+        
+        .hockey-scoreboard {
+            background: #000;
+            border: 3px solid #444;
+            border-radius: 10px;
+            width: 90%;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+        }
+        
+        .team-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40%;
+        }
+        
+        .team-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #00ccff;
+        }
+        
+        .team-score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff3366;
+            background: #111;
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            margin-top: 5px;
+            font-family: 'Digital', Arial, sans-serif;
+        }
+        
+        .center-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 20%;
+        }
+        
+        .period-display {
+            font-size: 16px;
+            color: #00ccff;
+            margin-bottom: 5px;
+        }
+        
+        .level-display {
+            font-size: 16px;
+            color: #ffcc00;
+            margin-top: 5px;
+        }
+        
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            color: white;
+            z-index: 10;
+        }
+        
+        .menu-button {
+            background: linear-gradient(135deg, #ff3366 0%, #ff6b3d 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+            transition: all 0.3s ease;
+            width: 250px;
+            text-align: center;
+        }
+        
+        .menu-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.8);
+        }
+        
+        #game-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff3366, #5b42f3, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        #milestone {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 5;
+        }
+        
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            color: white;
+            z-index: 11;
+        }
+        
+        #game-options {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            color: white;
+            z-index: 11;
+        }
+        
+        .option-section {
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .option-section h3 {
+            margin-bottom: 10px;
+            color: #00ccff;
+        }
+        
+        .level-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            max-width: 400px;
+        }
+        
+        .level-button {
+            background: #1a1a4a;
+            color: white;
+            border: 1px solid #3366ff;
+            padding: 8px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .level-button:hover {
+            background: #3366ff;
+        }
+        
+        .level-button.active {
+            background: #ff3366;
+            border-color: #ff3366;
+        }
+        
+        .difficulty-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-button {
+            background: #1a1a4a;
+            color: white;
+            border: 1px solid #3366ff;
+            padding: 8px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 90px;
+        }
+        
+        .difficulty-button:hover {
+            background: #3366ff;
+        }
+        
+        .difficulty-button.active {
+            background: #ff3366;
+            border-color: #ff3366;
+        }
+        
+        #player-name-input {
+            background: #1a1a4a;
+            border: 2px solid #3366ff;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 200px;
+        }
+        
+        #player2-name-input {
+            background: #1a1a4a;
+            border: 2px solid #ff3366;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 200px;
+        }
+        
+        #pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            color: white;
+            z-index: 12;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #3366ff 0%, #00ccff 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0, 204, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 204, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="scoreboard">
+            <div class="hockey-scoreboard">
+                <div class="team-section">
+                    <div class="team-name" id="player1-name">PLAYER 1</div>
+                    <div class="team-score" id="player-score">0</div>
+                </div>
+                <div class="center-section">
+                    <div class="period-display">PERIOD: <span id="period-counter">1</span></div>
+                    <div class="level-display">LEVEL: <span id="level-counter">1</span></div>
+                </div>
+                <div class="team-section">
+                    <div class="team-name" id="player2-name">AI</div>
+                    <div class="team-score" id="ai-score">0</div>
+                </div>
+            </div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <div id="start-screen">
+            <h1 id="game-title">GALAXY AIR HOCKEY</h1>
+            <button id="single-player-btn" class="menu-button">SINGLE PLAYER</button>
+            <button id="multiplayer-btn" class="menu-button">MULTIPLAYER</button>
+            <button id="options-btn" class="menu-button">OPTIONS</button>
+        </div>
+        <div id="game-options">
+            <h2>GAME OPTIONS</h2>
+            <div class="option-section">
+                <h3>DIFFICULTY</h3>
+                <div class="difficulty-buttons" id="difficulty-selection">
+                    <button class="difficulty-button active" data-difficulty="easy">EASY</button>
+                    <button class="difficulty-button" data-difficulty="medium">MEDIUM</button>
+                    <button class="difficulty-button" data-difficulty="hard">HARD</button>
+                    <button class="difficulty-button" data-difficulty="expert">EXPERT</button>
+                </div>
+            </div>
+            <div class="option-section">
+                <h3>SELECT LEVEL</h3>
+                <div class="level-buttons" id="level-selection">
+                    <button class="level-button active" data-level="1">1</button>
+                    <button class="level-button" data-level="2">2</button>
+                    <button class="level-button" data-level="3">3</button>
+                    <button class="level-button" data-level="4">4</button>
+                    <button class="level-button" data-level="5">5</button>
+                    <button class="level-button" data-level="6">6</button>
+                    <button class="level-button" data-level="7">7</button>
+                    <button class="level-button" data-level="8">8</button>
+                    <button class="level-button" data-level="9">9</button>
+                    <button class="level-button" data-level="10">10</button>
+                </div>
+            </div>
+            <div class="option-section">
+                <h3>PLAYER NAME</h3>
+                <input type="text" id="player-name-input" placeholder="Player 1" maxlength="10">
+            </div>
+            <div class="option-section">
+                <h3>PLAYER 2 NAME</h3>
+                <input type="text" id="player2-name-input" placeholder="Player 2" maxlength="10">
+            </div>
+            <button id="back-to-menu" class="back-button">BACK TO MENU</button>
+        </div>
+        <div id="milestone">MILESTONE ACHIEVED!</div>
+        <div id="game-over">
+            <h2 id="winner-text">Game Over!</h2>
+            <button id="next-level-button" class="menu-button">NEXT LEVEL</button>
+            <button id="replay-button" class="menu-button">PLAY AGAIN</button>
+            <button id="back-to-main" class="back-button">BACK TO MENU</button>
+        </div>
+        <div id="pause-overlay">
+            <h2>GAME PAUSED</h2>
+            <button id="resume-button" class="menu-button">RESUME</button>
+            <button id="quit-button" class="back-button">QUIT GAME</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        const config = {
+            width: 700,
+            height: 400,
+            fps: 60,
+            aiSpeed: 0.03,
+            puckSpeed: 0.4,
+            friction: 0.99,
+            maxScore: 7,
+            particleCount: 20,
+            goalWidth: 180,
+            paddleRadius: 30,
+            puckRadius: 15,
+            periodLength: 30,
+            periods: 3,
+            velocityThreshold: 0.1,
+            difficultySettings: {
+                easy: {
+                    aiSpeedMultiplier: 0.7,
+                    aiPredictionError: 30,
+                    aiReactionDelay: 200,
+                    puckSpeedMultiplier: 0.8
+                },
+                medium: {
+                    aiSpeedMultiplier: 1.0,
+                    aiPredictionError: 20,
+                    aiReactionDelay: 100,
+                    puckSpeedMultiplier: 1.0
+                },
+                hard: {
+                    aiSpeedMultiplier: 1.3,
+                    aiPredictionError: 10,
+                    aiReactionDelay: 50,
+                    puckSpeedMultiplier: 1.2
+                },
+                expert: {
+                    aiSpeedMultiplier: 1.6,
+                    aiPredictionError: 5,
+                    aiReactionDelay: 20,
+                    puckSpeedMultiplier: 1.4
+                }
+            },
+            levelSettings: [
+                { aiSpeed: 0.02, puckSpeedMultiplier: 0.9, maxScore: 3 },
+                { aiSpeed: 0.025, puckSpeedMultiplier: 0.95, maxScore: 4 },
+                { aiSpeed: 0.03, puckSpeedMultiplier: 1, maxScore: 5 },
+                { aiSpeed: 0.035, puckSpeedMultiplier: 1.05, maxScore: 5 },
+                { aiSpeed: 0.04, puckSpeedMultiplier: 1.1, maxScore: 6 },
+                { aiSpeed: 0.045, puckSpeedMultiplier: 1.15, maxScore: 6 },
+                { aiSpeed: 0.05, puckSpeedMultiplier: 1.2, maxScore: 7 },
+                { aiSpeed: 0.055, puckSpeedMultiplier: 1.25, maxScore: 7 },
+                { aiSpeed: 0.06, puckSpeedMultiplier: 1.3, maxScore: 8 },
+                { aiSpeed: 0.07, puckSpeedMultiplier: 1.4, maxScore: 9 }
+            ]
+        };
+
+        // Game State
+        const state = {
+            playerScore: 0,
+            aiScore: 0,
+            gameStarted: false,
+            lastTime: 0,
+            particles: [],
+            goals: [],
+            gameMode: 'singleplayer',
+            currentLevel: 0,
+            difficulty: 'easy',
+            isPaused: false,
+            isGameOver: false,
+            period: 1,
+            periodTimeLeft: config.periodLength,
+            lastPeriodUpdate: 0,
+            player1Name: "PLAYER 1",
+            player2Name: "AI",
+            milestones: [
+                { score: 3, message: "HAT TRICK!" },
+                { score: 5, message: "DOMINATING!" },
+                { score: 7, message: "CHAMPION!" }
+            ],
+            puckStuckTimer: 0,
+            puckLastPosition: { x: 0, y: 0 },
+            stars: [],
+            keys: {
+                player1Up: false,
+                player1Down: false,
+                player1Left: false,
+                player1Right: false,
+                player2Up: false,
+                player2Down: false,
+                player2Left: false,
+                player2Right: false
+            },
+            aiTarget: { x: 0, y: 0 },
+            aiLastUpdate: 0
+        };
+
+        // Game Elements
+        const elements = {
+            canvas: document.getElementById('game-canvas'),
+            ctx: null,
+            startScreen: document.getElementById('start-screen'),
+            singlePlayerBtn: document.getElementById('single-player-btn'),
+            multiplayerBtn: document.getElementById('multiplayer-btn'),
+            optionsBtn: document.getElementById('options-btn'),
+            gameOptions: document.getElementById('game-options'),
+            backToMenuBtn: document.getElementById('back-to-menu'),
+            playerScoreElement: document.getElementById('player-score'),
+            aiScoreElement: document.getElementById('ai-score'),
+            player1NameElement: document.getElementById('player1-name'),
+            player2NameElement: document.getElementById('player2-name'),
+            periodCounterElement: document.getElementById('period-counter'),
+            levelCounterElement: document.getElementById('level-counter'),
+            milestoneElement: document.getElementById('milestone'),
+            gameOver: document.getElementById('game-over'),
+            replayButton: document.getElementById('replay-button'),
+            nextLevelButton: document.getElementById('next-level-button'),
+            backToMainButton: document.getElementById('back-to-main'),
+            winnerText: document.getElementById('winner-text'),
+            pauseOverlay: document.getElementById('pause-overlay'),
+            resumeButton: document.getElementById('resume-button'),
+            quitButton: document.getElementById('quit-button'),
+            playerNameInput: document.getElementById('player-name-input'),
+            player2NameInput: document.getElementById('player2-name-input'),
+            levelButtons: document.querySelectorAll('.level-button'),
+            difficultyButtons: document.querySelectorAll('.difficulty-button')
+        };
+
+        // Game Objects
+        const objects = {
+            player: {
+                x: config.width * 0.25,
+                y: config.height / 2,
+                radius: config.paddleRadius,
+                color: '#3366FF',
+                vx: 0,
+                vy: 0,
+                speed: 5
+            },
+            player2: {
+                x: config.width * 0.75,
+                y: config.height / 2,
+                radius: config.paddleRadius,
+                color: '#FF3366',
+                vx: 0,
+                vy: 0,
+                speed: 5
+            },
+            ai: {
+                x: config.width * 0.75,
+                y: config.height / 2,
+                radius: config.paddleRadius,
+                color: '#FF3366',
+                vx: 0,
+                vy: 0
+            },
+            puck: {
+                x: config.width / 2,
+                y: config.height / 2,
+                radius: config.puckRadius,
+                color: '#FFCC00',
+                vx: 0,
+                vy: 0,
+                mass: 1
+            },
+            table: {
+                centerLine: {
+                    x: config.width / 2,
+                    width: 4,
+                    color: '#FF0000'
+                },
+                sideLines: [
+                    { x: config.width * 0.25, width: 2, color: '#0066FF' },
+                    { x: config.width * 0.75, width: 2, color: '#0066FF' }
+                ],
+                corners: [
+                    { x: 0, y: 0 },
+                    { x: config.width, y: 0 },
+                    { x: 0, y: config.height },
+                    { x: config.width, y: config.height }
+                ],
+                goals: [
+                    { x: 0, y: config.height / 2, radius: 30, color: '#FF0000' },
+                    { x: config.width, y: config.height / 2, radius: 30, color: '#FF0000' }
+                ]
+            }
+        };
+
+        // Event Listeners
+        function setupEventListeners() {
+            elements.canvas.addEventListener('mousemove', handleMouseMove);
+            elements.canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            
+            // Menu buttons
+            elements.singlePlayerBtn.addEventListener('click', () => startGameMode('singleplayer'));
+            elements.multiplayerBtn.addEventListener('click', () => startGameMode('multiplayer'));
+            elements.optionsBtn.addEventListener('click', showOptions);
+            elements.backToMenuBtn.addEventListener('click', hideOptions);
+            
+            // Game over buttons
+            elements.replayButton.addEventListener('click', resetGame);
+            elements.nextLevelButton.addEventListener('click', nextLevel);
+            elements.backToMainButton.addEventListener('click', backToMainMenu);
+            
+            // Pause buttons
+            elements.resumeButton.addEventListener('click', resumeGame);
+            elements.quitButton.addEventListener('click', quitGame);
+            
+            // Level selection
+            elements.levelButtons.forEach(button => {
+                button.addEventListener('click', () => selectLevel(parseInt(button.dataset.level)));
+            });
+            
+            // Difficulty selection
+            elements.difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => selectDifficulty(button.dataset.difficulty));
+            });
+            
+            // Player name inputs
+            elements.playerNameInput.addEventListener('input', updatePlayerName);
+            elements.player2NameInput.addEventListener('input', updatePlayer2Name);
+            
+            // Keyboard controls
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
+            
+            // Pause game with ESC key
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && state.gameStarted && !state.isGameOver) {
+                    togglePause();
+                }
+            });
+        }
+
+        // Keyboard controls
+        function handleKeyDown(e) {
+            if (!state.gameStarted || state.isPaused) return;
+            
+            // Player 1 controls (WASD)
+            if (e.key === 'w' || e.key === 'W') state.keys.player1Up = true;
+            if (e.key === 's' || e.key === 'S') state.keys.player1Down = true;
+            if (e.key === 'a' || e.key === 'A') state.keys.player1Left = true;
+            if (e.key === 'd' || e.key === 'D') state.keys.player1Right = true;
+            
+            // Player 2 controls (Arrow keys) - only active in multiplayer mode
+            if (state.gameMode === 'multiplayer') {
+                if (e.key === 'ArrowUp') state.keys.player2Up = true;
+                if (e.key === 'ArrowDown') state.keys.player2Down = true;
+                if (e.key === 'ArrowLeft') state.keys.player2Left = true;
+                if (e.key === 'ArrowRight') state.keys.player2Right = true;
+            }
+        }
+        
+        function handleKeyUp(e) {
+            if (!state.gameStarted) return;
+            
+            // Player 1 controls (WASD)
+            if (e.key === 'w' || e.key === 'W') state.keys.player1Up = false;
+            if (e.key === 's' || e.key === 'S') state.keys.player1Down = false;
+            if (e.key === 'a' || e.key === 'A') state.keys.player1Left = false;
+            if (e.key === 'd' || e.key === 'D') state.keys.player1Right = false;
+            
+            // Player 2 controls (Arrow keys) - only active in multiplayer mode
+            if (state.gameMode === 'multiplayer') {
+                if (e.key === 'ArrowUp') state.keys.player2Up = false;
+                if (e.key === 'ArrowDown') state.keys.player2Down = false;
+                if (e.key === 'ArrowLeft') state.keys.player2Left = false;
+                if (e.key === 'ArrowRight') state.keys.player2Right = false;
+            }
+        }
+        
+        // Show options screen
+        function showOptions() {
+            elements.startScreen.style.display = 'none';
+            elements.gameOptions.style.display = 'flex';
+        }
+        
+        // Hide options screen
+        function hideOptions() {
+            elements.gameOptions.style.display = 'none';
+            elements.startScreen.style.display = 'flex';
+        }
+        
+        // Select level
+        function selectLevel(level) {
+            state.currentLevel = level - 1;
+            elements.levelButtons.forEach(button => {
+                button.classList.remove('active');
+                if (parseInt(button.dataset.level) === level) {
+                    button.classList.add('active');
+                }
+            });
+            elements.levelCounterElement.textContent = level;
+        }
+        
+        // Update player names
+        function updatePlayerName() {
+            const name = elements.playerNameInput.value.trim() || "PLAYER 1";
+            state.player1Name = name.toUpperCase();
+            elements.player1NameElement.textContent = state.player1Name;
+        }
+        
+        function updatePlayer2Name() {
+            const name = elements.player2NameInput.value.trim() || "PLAYER 2";
+            state.player2Name = name.toUpperCase();
+            if (state.gameMode === 'multiplayer') {
+                elements.player2NameElement.textContent = state.player2Name;
+            }
+        }
+        
+        // Toggle pause
+        function togglePause() {
+            state.isPaused = !state.isPaused;
+            
+            if (state.isPaused) {
+                elements.pauseOverlay.style.display = 'flex';
+            } else {
+                elements.pauseOverlay.style.display = 'none';
+                state.lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Resume game
+        function resumeGame() {
+            if (state.isPaused) {
+                togglePause();
+            }
+        }
+        
+        // Quit game
+        function quitGame() {
+            state.isPaused = false;
+            elements.pauseOverlay.style.display = 'none';
+            backToMainMenu();
+        }
+        
+        // Back to main menu
+        function backToMainMenu() {
+            state.gameStarted = false;
+            state.isGameOver = false;
+            elements.gameOver.style.display = 'none';
+            elements.startScreen.style.display = 'flex';
+        }
+        
+        // Next level
+        function nextLevel() {
+            if (state.currentLevel < config.levelSettings.length - 1) {
+                state.currentLevel++;
+                elements.levelCounterElement.textContent = state.currentLevel + 1;
+                resetGame();
+            } else {
+                // At max level
+                resetGame();
+            }
+        }
+
+        // Initialize Game
+        function init() {
+            elements.canvas.width = config.width;
+            elements.canvas.height = config.height;
+            elements.ctx = elements.canvas.getContext('2d');
+            
+            // Initialize DOM references for difficulty buttons
+            elements.difficultyButtons = document.querySelectorAll('.difficulty-button');
+            
+            setupEventListeners();
+            createStars();
+            applyLevelSettings();
+            
+            // Initialize AI target
+            state.aiTarget = {
+                x: objects.ai.x,
+                y: objects.ai.y
+            };
+            
+            drawGame(); // Draw initial state
+        }
+
+        // Create stars for galaxy background
+        function createStars() {
+            state.stars = [];
+            for (let i = 0; i < 200; i++) {
+                state.stars.push({
+                    x: Math.random() * config.width,
+                    y: Math.random() * config.height,
+                    radius: Math.random() * 1.5,
+                    opacity: Math.random() * 0.8 + 0.2
+                });
+            }
+        }
+        
+        // Apply level settings
+        function applyLevelSettings() {
+            const levelSettings = config.levelSettings[state.currentLevel];
+            const diffSettings = config.difficultySettings[state.difficulty];
+            
+            // Apply combined settings
+            config.aiSpeed = levelSettings.aiSpeed * diffSettings.aiSpeedMultiplier;
+            config.puckSpeed = 0.4 * levelSettings.puckSpeedMultiplier * diffSettings.puckSpeedMultiplier;
+            config.maxScore = levelSettings.maxScore;
+        }
+
+        // Start Game with specific mode
+        function startGameMode(mode) {
+            state.gameMode = mode;
+            state.playerScore = 0;
+            state.aiScore = 0;
+            
+            if (mode === 'multiplayer') {
+                elements.player2NameElement.textContent = state.player2Name;
+            } else {
+                elements.player2NameElement.textContent = 'AI';
+                // Apply difficulty settings for single player
+                applyLevelSettings();
+            }
+            
+            state.gameStarted = true;
+            state.isPaused = false;
+            state.isGameOver = false;
+            state.period = 1;
+            state.periodTimeLeft = config.periodLength;
+            elements.periodCounterElement.textContent = state.period;
+            
+            elements.startScreen.style.display = 'none';
+            resetPositions();
+            updateScoreboard();
+            state.lastTime = performance.now();
+            state.lastPeriodUpdate = performance.now();
+            state.aiLastUpdate = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Reset Game
+        function resetGame() {
+            state.playerScore = 0;
+            state.aiScore = 0;
+            state.period = 1;
+            state.periodTimeLeft = config.periodLength;
+            elements.periodCounterElement.textContent = state.period;
+            updateScoreboard();
+            elements.gameOver.style.display = 'none';
+            resetPositions();
+            state.gameStarted = true;
+            state.isGameOver = false;
+            state.lastTime = performance.now();
+            state.lastPeriodUpdate = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Reset Positions
+        function resetPositions() {
+            objects.puck.x = config.width / 2;
+            objects.puck.y = config.height / 2;
+            objects.puck.vx = (Math.random() * 2 - 1) * 2;
+            objects.puck.vy = (Math.random() * 2 - 1) * 2;
+            
+            objects.player.x = config.width * 0.25;
+            objects.player.y = config.height / 2;
+            objects.player.vx = 0;
+            objects.player.vy = 0;
+            
+            objects.player2.x = config.width * 0.75;
+            objects.player2.y = config.height / 2;
+            objects.player2.vx = 0;
+            objects.player2.vy = 0;
+            
+            objects.ai.x = config.width * 0.75;
+            objects.ai.y = config.height / 2;
+            
+            state.puckStuckTimer = 0;
+            state.puckLastPosition = { x: objects.puck.x, y: objects.puck.y };
+        }
+
+        // Game Loop
+        function gameLoop(timestamp) {
+            if (!state.gameStarted || state.isPaused) return;
+            
+            // Calculate delta time
+            const deltaTime = timestamp - (state.lastTime || timestamp);
+            state.lastTime = timestamp;
+            
+            // Update period time
+            if (!state.isGameOver) {
+                updatePeriod(timestamp);
+            }
+            
+            update(deltaTime);
+            drawGame();
+            
+            if (state.playerScore < config.maxScore && state.aiScore < config.maxScore && !state.isGameOver) {
+                requestAnimationFrame(gameLoop);
+            } else {
+                endGame();
+            }
+        }
+        
+        // Update period
+        function updatePeriod(timestamp) {
+            const periodDelta = (timestamp - state.lastPeriodUpdate) / 1000; // Convert to seconds
+            state.lastPeriodUpdate = timestamp;
+            
+            state.periodTimeLeft -= periodDelta;
+            
+            if (state.periodTimeLeft <= 0) {
+                state.period++;
+                if (state.period <= config.periods) {
+                    state.periodTimeLeft = config.periodLength;
+                    elements.periodCounterElement.textContent = state.period;
+                    resetPositions();
+                    showMilestone(`PERIOD ${state.period}`);
+                } else {
+                    // Game over after all periods
+                    state.isGameOver = true;
+                }
+            }
+        }
+
+        // End Game
+        function endGame() {
+            state.gameStarted = false;
+            state.isGameOver = true;
+            elements.gameOver.style.display = 'flex';
+            
+            if (state.playerScore > state.aiScore) {
+                elements.winnerText.textContent = `${state.player1Name} Wins!`;
+                // Show next level button if not at max level and in single player
+                if (state.currentLevel < config.levelSettings.length - 1 && state.gameMode !== 'multiplayer') {
+                    elements.nextLevelButton.style.display = 'block';
+                } else {
+                    elements.nextLevelButton.style.display = 'none';
+                }
+            } else if (state.aiScore > state.playerScore) {
+                if (state.gameMode === 'multiplayer') {
+                    elements.winnerText.textContent = `${state.player2Name} Wins!`;
+                    elements.nextLevelButton.style.display = 'none';
+                } else {
+                    elements.winnerText.textContent = "AI Wins!";
+                    elements.nextLevelButton.style.display = 'none';
+                }
+            } else {
+                elements.winnerText.textContent = "It's a Tie!";
+                elements.nextLevelButton.style.display = 'none';
+            }
+        }
+
+        // Update Game State
+        function update(deltaTime) {
+            // Move paddles based on keyboard input in multiplayer mode
+            if (state.gameMode === 'multiplayer') {
+                movePlayer1WithKeyboard();
+                movePlayer2WithKeyboard();
+            } else {
+                moveAI();
+            }
+            
+            movePuck();
+            checkCollisions();
+            updateParticles();
+            checkPuckStuck();
+        }
+        
+        // Move Player 1 with keyboard
+        function movePlayer1WithKeyboard() {
+            const player = objects.player;
+            let dx = 0;
+            let dy = 0;
+            
+            if (state.keys.player1Up) dy -= player.speed;
+            if (state.keys.player1Down) dy += player.speed;
+            if (state.keys.player1Left) dx -= player.speed;
+            if (state.keys.player1Right) dx += player.speed;
+            
+            // Apply velocity
+            player.x += dx;
+            player.y += dy;
+            
+            // Keep within bounds
+            player.x = Math.max(player.radius, Math.min(config.width / 2 - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(config.height - player.radius, player.y));
+        }
+        
+        // Move Player 2 with keyboard
+        function movePlayer2WithKeyboard() {
+            if (state.gameMode !== 'multiplayer') return;
+            
+            const player2 = objects.player2;
+            let dx = 0;
+            let dy = 0;
+            
+            if (state.keys.player2Up) dy -= player2.speed;
+            if (state.keys.player2Down) dy += player2.speed;
+            if (state.keys.player2Left) dx -= player2.speed;
+            if (state.keys.player2Right) dx += player2.speed;
+            
+            // Apply velocity
+            player2.x += dx;
+            player2.y += dy;
+            
+            // Store velocity for physics calculations
+            player2.vx = dx;
+            player2.vy = dy;
+            
+            // Keep within bounds
+            player2.x = Math.max(config.width / 2 + player2.radius, Math.min(config.width - player2.radius, player2.x));
+            player2.y = Math.max(player2.radius, Math.min(config.height - player2.radius, player2.y));
+        }
+
+        // Move AI Paddle
+        function moveAI() {
+            const aiPaddle = objects.ai;
+            const puck = objects.puck;
+            const diffSettings = config.difficultySettings[state.difficulty];
+            const now = performance.now();
+            
+            // Update AI target with delay based on difficulty
+            if (now - state.aiLastUpdate > diffSettings.aiReactionDelay) {
+                state.aiLastUpdate = now;
+                
+                // Only chase the puck if it's on AI's side or moving towards AI
+                if (puck.x > config.width / 2 || puck.vx > 0) {
+                    // Calculate target position with prediction error based on difficulty
+                    const predictionError = (Math.random() * 2 - 1) * diffSettings.aiPredictionError;
+                    state.aiTarget.y = puck.y + predictionError;
+                    
+                    // Adjust AI position on X-axis to keep it on its side
+                    const targetX = Math.min(config.width - aiPaddle.radius, Math.max(config.width / 2, puck.x));
+                    state.aiTarget.x = targetX;
+                }
+            }
+            
+            // Move towards the target
+            const dx = state.aiTarget.x - aiPaddle.x;
+            const dy = state.aiTarget.y - aiPaddle.y;
+            
+            aiPaddle.x += dx * config.aiSpeed;
+            aiPaddle.y += dy * config.aiSpeed;
+            
+            // Keep AI paddle within bounds
+            aiPaddle.y = Math.max(aiPaddle.radius, Math.min(config.height - aiPaddle.radius, aiPaddle.y));
+            aiPaddle.x = Math.max(config.width / 2 + aiPaddle.radius, Math.min(config.width - aiPaddle.radius, aiPaddle.x));
+            
+            // Store velocity for physics calculations
+            aiPaddle.vx = dx * config.aiSpeed;
+            aiPaddle.vy = dy * config.aiSpeed;
+        }
+
+        // Check if puck is stuck and fix it
+        function checkPuckStuck() {
+            const puck = objects.puck;
+            const dx = puck.x - state.puckLastPosition.x;
+            const dy = puck.y - state.puckLastPosition.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // If puck is barely moving
+            if (Math.abs(puck.vx) < config.velocityThreshold && 
+                Math.abs(puck.vy) < config.velocityThreshold) {
+                state.puckStuckTimer += 1;
+                
+                // If stuck for too long, give it a small random push
+                if (state.puckStuckTimer > 60) { // 1 second at 60fps
+                    const angle = Math.random() * Math.PI * 2;
+                    puck.vx = Math.cos(angle) * (config.puckSpeed * 2);
+                    puck.vy = Math.sin(angle) * (config.puckSpeed * 2);
+                    state.puckStuckTimer = 0;
+                }
+            } else {
+                state.puckStuckTimer = 0;
+            }
+            
+            // Remember last position for next check
+            state.puckLastPosition = { x: puck.x, y: puck.y };
+            
+            // Ensure puck maintains minimum velocity
+            const speed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+            if (speed > 0 && speed < config.velocityThreshold * 5) {
+                const factor = config.velocityThreshold * 5 / speed;
+                puck.vx *= factor;
+                puck.vy *= factor;
+            }
+        }
+
+        // Move Puck
+        function movePuck() {
+            const puck = objects.puck;
+            
+            // Apply friction
+            puck.vx *= config.friction;
+            puck.vy *= config.friction;
+            
+            // Update position
+            puck.x += puck.vx;
+            puck.y += puck.vy;
+            
+            // Check wall collisions
+            if (puck.y - puck.radius < 0) {
+                puck.y = puck.radius;
+                puck.vy = -puck.vy * 0.9; // Add energy loss on collision
+                createCollisionParticles(puck.x, puck.radius);
+            }
+            
+            if (puck.y + puck.radius > config.height) {
+                puck.y = config.height - puck.radius;
+                puck.vy = -puck.vy * 0.9; // Add energy loss on collision
+                createCollisionParticles(puck.x, config.height - puck.radius);
+            }
+            
+            // Check goal collisions
+            checkGoals();
+        }
+
+        // Check Goals
+        function checkGoals() {
+            const puck = objects.puck;
+            const goalY = config.height / 2;
+            const halfGoalWidth = config.goalWidth / 2;
+            
+            // Left goal (AI/Player2 scores)
+            if (puck.x - puck.radius <= 0) {
+                if (Math.abs(puck.y - goalY) < halfGoalWidth) {
+                    if (state.gameMode === 'multiplayer') {
+                        scoreGoal('player2');
+                    } else {
+                        scoreGoal('ai');
+                    }
+                } else {
+                    puck.x = puck.radius;
+                    puck.vx = -puck.vx * 0.9; // Add energy loss on collision
+                    createCollisionParticles(puck.radius, puck.y);
+                }
+            }
+            
+            // Right goal (Player scores)
+            if (puck.x + puck.radius >= config.width) {
+                if (Math.abs(puck.y - goalY) < halfGoalWidth) {
+                    scoreGoal('player');
+                } else {
+                    puck.x = config.width - puck.radius;
+                    puck.vx = -puck.vx * 0.9; // Add energy loss on collision
+                    createCollisionParticles(config.width - puck.radius, puck.y);
+                }
+            }
+        }
+
+        // Score Goal
+        function scoreGoal(scorer) {
+            if (scorer === 'player') {
+                state.playerScore++;
+                checkMilestone(state.playerScore);
+                createGoalAnimation(config.width, config.height / 2);
+            } else if (scorer === 'player2') {
+                state.aiScore++;
+                createGoalAnimation(0, config.height / 2);
+                showMilestone(`${state.player2Name} SCORES!`);
+            } else {
+                state.aiScore++;
+                createGoalAnimation(0, config.height / 2);
+                showMilestone("AI SCORES!");
+            }
+            
+            updateScoreboard();
+            resetPositions();
+        }
+
+        // Check Milestones
+        function checkMilestone(score) {
+            const milestone = state.milestones.find(m => m.score === score);
+            if (milestone) {
+                showMilestone(milestone.message);
+            } else {
+                showMilestone(`${state.player1Name} SCORES!`);
+            }
+        }
+
+        // Show Milestone
+        function showMilestone(message) {
+            elements.milestoneElement.textContent = message;
+            elements.milestoneElement.style.opacity = '1';
+            
+            setTimeout(() => {
+                elements.milestoneElement.style.opacity = '0';
+            }, 2000);
+        }
+
+        // Create Goal Animation
+        function createGoalAnimation(x, y) {
+            for (let i = 0; i < 30; i++) {
+                state.goals.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    radius: Math.random() * 5 + 2,
+                    opacity: 1,
+                    color: `hsl(${Math.random() * 60 + 180}, 100%, 70%)`
+                });
+            }
+        }
+
+        // Check Collisions
+        function checkCollisions() {
+            const puck = objects.puck;
+            const player = objects.player;
+            
+            // Player collision
+            checkPaddleCollision(puck, player);
+            
+            if (state.gameMode === 'multiplayer') {
+                checkPaddleCollision(puck, objects.player2);
+            } else {
+                // AI collision
+                checkPaddleCollision(puck, objects.ai);
+            }
+        }
+
+        // Check Paddle Collision
+        function checkPaddleCollision(puck, paddle) {
+            const dx = puck.x - paddle.x;
+            const dy = puck.y - paddle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < puck.radius + paddle.radius) {
+                // Calculate collision angle
+                const angle = Math.atan2(dy, dx);
+                
+                // Calculate collision force (stronger at the edges of the paddle)
+                const edgeFactor = distance / paddle.radius;
+                const force = Math.max(5, 8 * edgeFactor);
+                
+                // Apply new velocity based on collision angle and relative velocity
+                const relativeVelocityX = puck.vx - paddle.vx;
+                const relativeVelocityY = puck.vy - paddle.vy;
+                
+                // Apply paddle velocity to puck for more realistic physics
+                puck.vx = Math.cos(angle) * force + paddle.vx * 0.5;
+                puck.vy = Math.sin(angle) * force + paddle.vy * 0.5;
+                
+                // Create particles
+                createCollisionParticles(
+                    puck.x - Math.cos(angle) * puck.radius,
+                    puck.y - Math.sin(angle) * puck.radius
+                );
+                
+                // Move puck outside of paddle to prevent sticking
+                const pushDistance = puck.radius + paddle.radius - distance + 1;
+                puck.x += Math.cos(angle) * pushDistance;
+                puck.y += Math.sin(angle) * pushDistance;
+            }
+        }
+
+        // Create Collision Particles
+        function createCollisionParticles(x, y) {
+            for (let i = 0; i < config.particleCount; i++) {
+                state.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    opacity: 1,
+                    color: `hsl(${Math.random() * 60 + 180}, 100%, 70%)`
+                });
+            }
+        }
+
+        // Update Particles
+        function updateParticles() {
+            // Update collision particles
+            for (let i = state.particles.length - 1; i >= 0; i--) {
+                const particle = state.particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.opacity -= 0.05;
+                
+                if (particle.opacity <= 0) {
+                    state.particles.splice(i, 1);
+                }
+            }
+            
+            // Update goal particles
+            for (let i = state.goals.length - 1; i >= 0; i--) {
+                const particle = state.goals[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.95;
+                particle.vy *= 0.95;
+                particle.opacity -= 0.02;
+                
+                if (particle.opacity <= 0) {
+                    state.goals.splice(i, 1);
+                }
+            }
+        }
+
+        // Update Scoreboard
+        function updateScoreboard() {
+            elements.playerScoreElement.textContent = state.playerScore;
+            elements.aiScoreElement.textContent = state.aiScore;
+            elements.periodCounterElement.textContent = state.period;
+            
+            // Update level display with difficulty for single player
+            if (state.gameMode === 'singleplayer') {
+                elements.levelCounterElement.textContent = `${state.currentLevel + 1} (${state.difficulty.charAt(0).toUpperCase()})`;
+            } else {
+                elements.levelCounterElement.textContent = state.currentLevel + 1;
+            }
+        }
+
+        // Handle Mouse Move
+        function handleMouseMove(e) {
+            if (!state.gameStarted || state.isPaused) return;
+            
+            const rect = elements.canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Calculate velocities based on previous position
+            const prevX = objects.player.x;
+            const prevY = objects.player.y;
+            
+            // Limit player movement to left half of the table
+            const maxX = config.width / 2 - objects.player.radius;
+            objects.player.x = Math.min(maxX, Math.max(objects.player.radius, mouseX));
+            objects.player.y = Math.min(config.height - objects.player.radius, Math.max(objects.player.radius, mouseY));
+            
+            // Update velocities for paddle physics
+            objects.player.vx = objects.player.x - prevX;
+            objects.player.vy = objects.player.y - prevY;
+        }
+
+        // Handle Touch Move
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!state.gameStarted || state.isPaused) return;
+            
+            const rect = elements.canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            const touchY = e.touches[0].clientY - rect.top;
+            
+            // Calculate velocities based on previous position
+            const prevX = objects.player.x;
+            const prevY = objects.player.y;
+            
+            // Limit player movement to left half of the table
+            const maxX = config.width / 2 - objects.player.radius;
+            objects.player.x = Math.min(maxX, Math.max(objects.player.radius, touchX));
+            objects.player.y = Math.min(config.height - objects.player.radius, Math.max(objects.player.radius, touchY));
+            
+            // Update velocities for paddle physics
+            objects.player.vx = objects.player.x - prevX;
+            objects.player.vy = objects.player.y - prevY;
+        }
+
+        // Draw Game
+        function drawGame() {
+            const ctx = elements.ctx;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, config.width, config.height);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw table lines
+            drawTableLines();
+            
+            // Draw goals
+            drawGoals();
+            
+            // Draw paddles
+            drawPaddle(objects.player);
+            
+            if (state.gameMode === 'multiplayer') {
+                drawPaddle(objects.player2);
+            } else {
+                drawPaddle(objects.ai);
+            }
+            
+            // Draw puck
+            drawPuck();
+            
+            // Draw particles
+            drawParticles();
+            
+            // Draw goal particles
+            drawGoalParticles();
+            
+            // Draw period timer
+            drawPeriodTimer();
+        }
+        
+        // Draw period timer
+        function drawPeriodTimer() {
+            const ctx = elements.ctx;
+            
+            // Format time as MM:SS
+            const minutes = Math.floor(state.periodTimeLeft / 60);
+            const seconds = Math.floor(state.periodTimeLeft % 60);
+            const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.fillText(timeStr, config.width / 2, 25);
+        }
+
+        // Draw Background
+        function drawBackground() {
+            const ctx = elements.ctx;
+            
+            // Draw background gradient
+            const gradient = ctx.createLinearGradient(0, 0, config.width, config.height);
+            gradient.addColorStop(0, '#0c0c2a');
+            gradient.addColorStop(1, '#1a1a4a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, config.width, config.height);
+            
+            // Draw stars
+            ctx.save();
+            state.stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        // Draw Table Lines
+        function drawTableLines() {
+            const ctx = elements.ctx;
+            
+            // Draw center line
+            ctx.beginPath();
+            ctx.moveTo(objects.table.centerLine.x, 0);
+            ctx.lineTo(objects.table.centerLine.x, config.height);
+            ctx.lineWidth = objects.table.centerLine.width;
+            ctx.strokeStyle = objects.table.centerLine.color;
+            ctx.stroke();
+            
+            // Draw side lines
+            objects.table.sideLines.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.x, 0);
+                ctx.lineTo(line.x, config.height);
+                ctx.lineWidth = line.width;
+                ctx.strokeStyle = line.color;
+                ctx.stroke();
+            });
+            
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(config.width / 2, config.height / 2, 50, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#0066FF';
+            ctx.stroke();
+            
+            // Draw face-off circles
+            ctx.beginPath();
+            ctx.arc(config.width / 4, config.height / 2, 30, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#4488FF';
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(config.width * 3/4, config.height / 2, 30, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#4488FF';
+            ctx.stroke();
+        }
+
+        // Draw Goals
+        function drawGoals() {
+            const ctx = elements.ctx;
+            const halfGoalWidth = config.goalWidth / 2;
+            
+            // Draw goal areas
+            ctx.save();
+            
+            // Player goal (left)
+            ctx.beginPath();
+            ctx.arc(0, config.height / 2, objects.table.goals[0].radius, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = objects.table.goals[0].color;
+            ctx.stroke();
+            
+            // AI goal (right)
+            ctx.beginPath();
+            ctx.arc(config.width, config.height / 2, objects.table.goals[1].radius, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = objects.table.goals[1].color;
+            ctx.stroke();
+            
+            // Draw goal openings
+            // Left goal
+            ctx.beginPath();
+            ctx.moveTo(0, config.height / 2 - halfGoalWidth);
+            ctx.lineTo(0, config.height / 2 + halfGoalWidth);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#00FF00';
+            ctx.stroke();
+            
+            // Right goal
+            ctx.beginPath();
+            ctx.moveTo(config.width, config.height / 2 - halfGoalWidth);
+            ctx.lineTo(config.width, config.height / 2 + halfGoalWidth);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#00FF00';
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        // Draw Paddle
+        function drawPaddle(paddle) {
+            const ctx = elements.ctx;
+            
+            // Draw glow
+            ctx.beginPath();
+            const gradient = ctx.createRadialGradient(
+                paddle.x, paddle.y, paddle.radius * 0.5,
+                paddle.x, paddle.y, paddle.radius * 2
+            );
+            gradient.addColorStop(0, paddle.color + '44');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.arc(paddle.x, paddle.y, paddle.radius * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw paddle
+            ctx.beginPath();
+            ctx.arc(paddle.x, paddle.y, paddle.radius, 0, Math.PI * 2);
+            ctx.fillStyle = paddle.color;
+            ctx.fill();
+            
+            // Draw highlight
+            ctx.beginPath();
+            ctx.arc(paddle.x - paddle.radius * 0.3, paddle.y - paddle.radius * 0.3, paddle.radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fill();
+        }
+
+        // Draw Puck
+        function drawPuck() {
+            const ctx = elements.ctx;
+            const puck = objects.puck;
+            
+            // Draw glow
+            ctx.beginPath();
+            const gradient = ctx.createRadialGradient(
+                puck.x, puck.y, puck.radius * 0.5,
+                puck.x, puck.y, puck.radius * 2
+            );
+            gradient.addColorStop(0, puck.color + '44');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.arc(puck.x, puck.y, puck.radius * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw puck
+            ctx.beginPath();
+            ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2);
+            ctx.fillStyle = puck.color;
+            ctx.fill();
+            
+            // Draw highlight
+            ctx.beginPath();
+            ctx.arc(puck.x - puck.radius * 0.3, puck.y - puck.radius * 0.3, puck.radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fill();
+            
+            // Draw debug info for puck movement when it's stuck
+            if (state.puckStuckTimer > 30) {
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#FF0000';
+                ctx.textAlign = 'center';
+                ctx.fillText('!', puck.x, puck.y - puck.radius - 5);
+            }
+        }
+
+        // Draw Particles
+        function drawParticles() {
+            const ctx = elements.ctx;
+            
+            ctx.save();
+            state.particles.forEach(particle => {
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                ctx.fillStyle = particle.color.replace(')', `, ${particle.opacity})`);
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        // Draw Goal Particles
+        function drawGoalParticles() {
+            const ctx = elements.ctx;
+            
+            ctx.save();
+            state.goals.forEach(particle => {
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                ctx.fillStyle = particle.color.replace(')', `, ${particle.opacity})`);
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        // Select difficulty
+        function selectDifficulty(difficulty) {
+            state.difficulty = difficulty;
+            elements.difficultyButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.dataset.difficulty === difficulty) {
+                    button.classList.add('active');
+                }
+            });
+            
+            // Apply difficulty settings immediately if in single player mode
+            if (state.gameMode === 'singleplayer' && state.gameStarted) {
+                applyDifficultySettings();
+            }
+            
+            // Update the scoreboard to reflect difficulty change
+            updateScoreboard();
+        }
+        
+        // Apply difficulty settings
+        function applyDifficultySettings() {
+            const diffSettings = config.difficultySettings[state.difficulty];
+            const levelSettings = config.levelSettings[state.currentLevel];
+            
+            // Apply combined settings from difficulty and level
+            config.aiSpeed = levelSettings.aiSpeed * diffSettings.aiSpeedMultiplier;
+            config.puckSpeed = 0.4 * levelSettings.puckSpeedMultiplier * diffSettings.puckSpeedMultiplier;
+        }
+
+        // Display current difficulty
+        function updateDifficultyDisplay() {
+            // Update the level display to include difficulty
+            if (state.gameMode === 'singleplayer') {
+                const levelText = `LEVEL: ${state.currentLevel + 1} (${state.difficulty.toUpperCase()})`;
+                elements.levelCounterElement.parentElement.textContent = levelText;
+            } else {
+                elements.levelCounterElement.parentElement.textContent = `LEVEL: ${state.currentLevel + 1}`;
+            }
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
