@@ -1,8 +1,11 @@
 # Galaxy Air Hockey Game
 
-A beautiful, feature-rich air hockey game with space theme, advanced physics, and multiple gameplay options.
+BRING THE ARCADE COMPETITION WITH YOU ANYWHERE! Experience the ultimate adrenaline rush as cosmic battles unfold on your digital tabletop! Galaxy Air Hockey catapults the classic arcade favorite into the stratosphere with mind-blowing visuals, heart-pounding action, and cutting-edge gameplay that will keep you on the edge of your seat!
 
-![Galaxy Air Hockey Game](game-screenshot.png)
+## Design
+<img width="638" alt="Screenshot 2025-04-06 014952" src="https://github.com/user-attachments/assets/8b7ec564-2344-4808-a430-a6f750cd3f20" />
+<img width="638" alt="Screenshot 2025-04-06 020739" src="https://github.com/user-attachments/assets/6d6a2a4e-6cb0-48d0-a365-9d244dd8e627" />
+<img width="637" alt="Screenshot 2025-04-06 014742" src="https://github.com/user-attachments/assets/0a5ed316-254d-41d9-869f-3b5b77154c85" />
 
 ## Features
 
